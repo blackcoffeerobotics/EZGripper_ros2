@@ -119,6 +119,7 @@
 			<gazebo>
 				<plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
 					<joint_name>${prefix}_ezgripper_knuckle_1</joint_name>
+					<update_rate>100.0</update_rate>
 				</plugin>
 			</gazebo>
 	</xacro:macro>
@@ -179,10 +180,6 @@
 	<gazebo>
 
 		<plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-
-			<ros>
-				<namespace>/ezgripper_quad</namespace>
-			</ros>
 
 			<robot_param>robot_description</robot_param>
       <robot_param_node>/robot_state_publisher</robot_param_node>

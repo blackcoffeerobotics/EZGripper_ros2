@@ -23,7 +23,7 @@ def generate_launch_description():
         Node(
             package='ezgripper_driver',
             executable='ezgripper_action_server.py',
-            name='ezgripper_action_server_node',
+            name='ezgripper_controller',
             parameters=[config],
             output='screen',
             emulate_tty=True,

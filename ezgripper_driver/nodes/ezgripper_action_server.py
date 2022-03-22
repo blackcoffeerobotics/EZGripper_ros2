@@ -41,7 +41,11 @@ from rclpy.node import Node
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from std_srvs.srv import Empty
 from control_msgs.action import GripperCommand
+from sensor_msgs.msg import JointState
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+from py_trees_ros.utilities import qos_profile_unlatched
 from libezgripper import create_connection, Gripper
+
 
 class GripperAction(Node):
     """
@@ -53,10 +57,14 @@ class GripperAction(Node):
     _result = GripperCommand.Result()
 
     def __init__(self):
-        super().__init__('ezgripper_action_server_node')
+        super().__init__('ezgripper_controller')
+
+        self.update_rate = 50
+        self.time_period = 1./self.update_rate
 
         self._timeout = 3.0
         self._positional_buffer = 0.05
+        self.all_servos = []
 
         self.declare_parameter('port')
         self.declare_parameter('baudrate')
@@ -81,6 +89,8 @@ class GripperAction(Node):
             module_type = self.get_parameter('gripper_%s.module_type' % str(i)).value
 
             # self.grippers[action_name] = Gripper(connection, action_name, servo_ids)
+            # self.all_servos += self.grippers[action_name].servos
+
             self.create_service(Empty, '~/'+ action_name + '/calibrate', \
                 partial(self.calibrate_srv, action_name))
 
@@ -93,7 +103,91 @@ class GripperAction(Node):
                 execute_callback = partial(self._execute_callback, action_name, module_type)
             )
 
+        # Publishers
+        self.joint_state_pub = self.create_publisher(JointState, "/joint_states", \
+            qos_profile_unlatched())
+
+        self.diagnostics_pub = self.create_publisher(DiagnosticArray, "/diagnostics", \
+            qos_profile_unlatched())
+
+        # Timers
+        # self.create_timer(self.time_period, self.joint_state_update)
+        # self.create_timer(1.0, self.diagnostics_and_servo_update)
+
         self.get_logger().info('Gripper server ready')
+
+
+    def joint_state_update(self):
+        """
+        Publish joint state
+        """
+
+        for i in range(1, int(self.no_of_grippers) + 1):
+
+            action_name = self.get_parameter('gripper_%s.action_name' % str(i)).value
+            module_type = self.get_parameter('gripper_%s.module_type' % str(i)).value
+
+            current_gripper_position = self.grippers[action_name].get_position( \
+                use_percentages = False, gripper_module=module_type)
+
+            msg = JointState()
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.position = [current_gripper_position]
+
+            if module_type == 'dual_gen1' or module_type == 'quad':
+                finger_joint = 'left_ezgripper_knuckle_1'
+
+            elif module_type == 'dual_gen2':
+                finger_joint = 'left_ezgripper_knuckle_palm_L1_1'
+
+            msg.name = [finger_joint]
+
+            self.joint_state_pub.publish(msg)
+
+
+    def diagnostics_and_servo_update(self):
+        """
+        Send Diagnostic Data and monitor servos
+        """
+
+        msg = DiagnosticArray()
+        msg.status = []
+        msg.header.stamp = self.get_clock().now().to_msg()
+
+        for i in range(1, int(self.no_of_grippers) + 1):
+            action_name = self.get_parameter('gripper_%s.action_name' % str(i)).value
+
+            gripper = self.grippers[action_name]
+
+            for servo in gripper.servos:
+                status = DiagnosticStatus()
+                status.name = "Gripper '%s' servo %d"%(gripper.name, servo.servo_id)
+                status.hardware_id = '%s'%servo.servo_id
+                temperature = servo.read_temperature()
+                status.values.append(KeyValue('Temperature', str(temperature)))
+                status.values.append(KeyValue('Voltage', str(servo.read_voltage())))
+
+                if temperature >= 70:
+                    status.level = DiagnosticStatus.ERROR
+                    status.message = 'OVERHEATING'
+                elif temperature >= 65:
+                    status.level = DiagnosticStatus.WARN
+                    status.message = 'HOT'
+                else:
+                    status.level = DiagnosticStatus.OK
+                    status.message = 'OK'
+
+                msg.status.append(status)
+
+        self.diagnostics_pub.publish(msg)
+
+        for servo in self.all_servos:
+            try:
+                servo.check_overload_and_recover()
+            except Exception as error:
+                self.get_logger().info('Exception while checking overload')
+                servo.flushAll()
+
 
     def calibrate_srv(self, action_name, request, response):
         """

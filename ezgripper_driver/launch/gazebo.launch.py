@@ -58,9 +58,8 @@ def generate_launch_description():
             package="controller_manager",
             executable="spawner.py",
             arguments=["ezgripper_controller",
-                    "--controller-manager", ["/ezgripper_", \
-                        LaunchConfiguration("ezgripper_module"), "/controller_manager"],
-                    "--controller-manager-timeout", "120"],
+                    "--controller-manager", "/controller_manager",
+                    "--controller-manager-timeout", "10000"],
         ),
 
         Node(

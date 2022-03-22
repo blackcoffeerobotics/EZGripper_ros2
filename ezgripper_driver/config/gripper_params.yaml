@@ -1,5 +1,4 @@
-
-ezgripper_action_server_node:
+ezgripper_controller:
   ros__parameters:
 
     no_of_grippers: 1
