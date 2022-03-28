@@ -13,7 +13,7 @@ def generate_launch_description():
     Launch Function
     """
 
-    pkg_dir = get_package_share_directory('ezgripper_driver')
+    pkg_dir = get_package_share_directory('ezgripper_control')
 
     config = os.path.join(pkg_dir, 'config', 'gripper_params.yaml')
 

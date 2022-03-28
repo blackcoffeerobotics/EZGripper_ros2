@@ -23,10 +23,10 @@ find_package(ament_cmake REQUIRED)
 
 # .....................................................
 
-install(DIRECTORY config launch meshes nodes rviz urdf
+install(DIRECTORY launch scripts
   DESTINATION share/${PROJECT_NAME})
 
-install(PROGRAMS nodes/gripper_actuation/open_gripper nodes/gripper_actuation/close_gripper nodes/ezgripper_action_server.py
+install(PROGRAMS scripts/ezgripper_action_server.py
   DESTINATION lib/${PROJECT_NAME})
 
 # .....................................................

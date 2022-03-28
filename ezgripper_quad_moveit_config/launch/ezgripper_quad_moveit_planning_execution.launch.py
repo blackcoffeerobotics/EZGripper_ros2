@@ -35,7 +35,7 @@ def load_params(file_path, is_yaml = True):
 rviz_config = os.path.join(PKG_DIR, 'launch', 'moveit.rviz')
 
 robot_description_config = xacro.process_file( \
-        os.path.join(get_package_share_directory("ezgripper_driver"), \
+        os.path.join(get_package_share_directory("ezgripper_description"), \
             "urdf", "quad", \
                 "ezgripper_quad_standalone.urdf.xacro")
     )

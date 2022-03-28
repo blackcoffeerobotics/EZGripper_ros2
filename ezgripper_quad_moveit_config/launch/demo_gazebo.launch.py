@@ -7,7 +7,9 @@ import os
 import xacro
 import yaml
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
@@ -35,7 +37,7 @@ def load_params(file_path, is_yaml = True):
 rviz_config = os.path.join(PKG_DIR, 'launch', 'moveit.rviz')
 
 robot_description_config = xacro.process_file( \
-        os.path.join(get_package_share_directory("ezgripper_driver"), \
+        os.path.join(get_package_share_directory("ezgripper_description"), \
             "urdf", "quad", \
                 "ezgripper_quad_standalone.urdf.xacro")
     )
@@ -68,38 +70,30 @@ def generate_launch_description():
     Launch Function
     """
 
+    # .................. Configurable Arguments .....................
+
+    gui = False
+
+    world_name = 'mars.world'
+    ezgripper_module = 'quad'
+
+    # ...............................................................
+
+
     return LaunchDescription(
         [
 
-            ExecuteProcess(
-                cmd=['gazebo', '--verbose', \
-                '-s', 'libgazebo_ros_init.so',
-                '-s', 'libgazebo_ros_factory.so'],
-                output='screen'),
+            DeclareLaunchArgument('gui', \
+                default_value=str(gui), \
+                    description='Flag to enable joint_state_publisher_gui'),
 
-            Node(
-                package='gazebo_ros', executable='spawn_entity.py',
-                arguments=['-topic', 'robot_description',
-                        '-entity', 'ezgripper_quad',
-                        '-x', '0',
-                        '-y', '0',
-                        '-z', '0'
-                        ],
-                output='screen'
-            ),
+            DeclareLaunchArgument("world_name", \
+                default_value=world_name, \
+                    description="Choice of Gazebo World"),
 
-            Node(
-                package='joint_state_publisher',
-                executable='joint_state_publisher',
-                name='joint_state_publisher'
-            ),
-
-            Node(
-                package="robot_state_publisher",
-                executable="robot_state_publisher",
-                name="robot_state_publisher",
-                parameters=[robot_description],
-            ),
+            DeclareLaunchArgument('ezgripper_module', \
+                default_value=ezgripper_module, \
+                    description='Required module of ezgripper'),
 
             Node(
                 package="moveit_ros_move_group",
@@ -131,12 +125,21 @@ def generate_launch_description():
                 ],
             ),
 
-            Node(
-                package="controller_manager",
-                executable="spawner.py",
-                arguments=["ezgripper_controller",
-                        "--controller-manager", "/controller_manager",
-                        "--controller-manager-timeout", "10000"],
+            IncludeLaunchDescription( \
+                PythonLaunchDescriptionSource( \
+                    os.path.join(get_package_share_directory("ezgripper_control"), \
+                        'launch', 'control.launch.py'))
+            ),
+
+            IncludeLaunchDescription( \
+                PythonLaunchDescriptionSource( \
+                    os.path.join(get_package_share_directory("ezgripper_gazebo"), \
+                        'launch', 'gazebo.launch.py')),
+                launch_arguments={
+                    'gui': LaunchConfiguration('gui'),
+                    'world_name': LaunchConfiguration('world_name'),
+                    'ezgripper_module': LaunchConfiguration('ezgripper_module'),
+                    }.items(),
             ),
 
     ])

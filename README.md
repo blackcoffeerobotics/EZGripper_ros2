@@ -23,7 +23,7 @@ A ROS package that serves as a driver to the [EZGripper module](https://sakerobo
 
 * Build your workspace and source it:
 
-	  colcon build --symlink-install --packages-select ezgripper_driver gazebo_ros2_control ezgripper_dual_gen1_moveit_config  ezgripper_dual_gen2_moveit_config ezgripper_quad_moveit_config --allow-overriding ezgripper_driver gazebo_ros2_control ezgripper_dual_gen1_moveit_config  ezgripper_dual_gen2_moveit_config ezgripper_quad_moveit_config && source install/setup.bash
+	  colcon build --symlink-install --packages-select ezgripper_control ezgripper_description ezgripper_driver ezgripper_gazebo  ezgripper_dual_gen1_moveit_config  ezgripper_dual_gen2_moveit_config ezgripper_dual_gen2_single_mount_moveit_config ezgripper_dual_gen2_triple_mount_moveit_config ezgripper_quad_moveit_config gazebo_ros2_control --allow-overriding ezgripper_control ezgripper_description ezgripper_driver ezgripper_gazebo  ezgripper_dual_gen1_moveit_config  ezgripper_dual_gen2_moveit_config ezgripper_dual_gen2_single_mount_moveit_config ezgripper_dual_gen2_triple_mount_moveit_config ezgripper_quad_moveit_config gazebo_ros2_control && source install/setup.bash
 
 
 ### Software
@@ -44,14 +44,14 @@ A ROS package that serves as a driver to the [EZGripper module](https://sakerobo
 * To actuate the gripper into its respective open/close configurations in Gazebo:
 
 	  # Open Gripper
-	  ros2 run ezgripper_driver open_gripper ezgripper_module:=${ezgripper_module}
+	  ros2 run ezgripper_driver open_gripper
 
 	  # Close Gripper
-	  ros2 run ezgripper_driver close_gripper ezgripper_module:=${ezgripper_module}
+	  ros2 run ezgripper_driver close_gripper
 
 * Result of actuation:
 
-	![ezgripper_gif](https://user-images.githubusercontent.com/45683974/156144685-b91e2684-b484-4067-aee8-527d2e223650.gif)
+	![ezgripper_gif](https://user-images.githubusercontent.com/45683974/160160044-1a240688-a3f1-4308-a370-0df4f2a84611.gif)
 
 ### MoveIt!
 ---
