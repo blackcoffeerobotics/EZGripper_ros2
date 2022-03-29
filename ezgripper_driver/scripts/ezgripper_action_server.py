@@ -75,8 +75,8 @@ class GripperAction(Node):
         self.no_of_grippers = self.get_parameter('no_of_grippers').value
 
         self.grippers = {}
-        # connection = \
-        #     create_connection(dev_name=self.port, baudrate=self.baudrate)
+        connection = \
+            create_connection(dev_name=self.port, baudrate=self.baudrate)
 
         for i in range(1, int(self.no_of_grippers) + 1):
 
@@ -88,8 +88,11 @@ class GripperAction(Node):
             servo_ids = self.get_parameter('gripper_%s.servo_ids' % str(i)).value
             module_type = self.get_parameter('gripper_%s.module_type' % str(i)).value
 
-            # self.grippers[action_name] = Gripper(connection, action_name, servo_ids)
-            # self.all_servos += self.grippers[action_name].servos
+            self.grippers[action_name] = Gripper(connection, action_name, servo_ids)
+            self.all_servos += self.grippers[action_name].servos
+
+            self.grippers[action_name].calibrate()
+            self.grippers[action_name].open()
 
             self.create_service(Empty, '~/'+ action_name + '/calibrate', \
                 partial(self.calibrate_srv, action_name))
@@ -111,8 +114,8 @@ class GripperAction(Node):
             qos_profile_unlatched())
 
         # Timers
-        # self.create_timer(self.time_period, self.joint_state_update)
-        # self.create_timer(1.0, self.diagnostics_and_servo_update)
+        self.create_timer(self.time_period, self.joint_state_update)
+        self.create_timer(1.0, self.diagnostics_and_servo_update)
 
         self.get_logger().info('Gripper server ready')
 
