@@ -37,15 +37,23 @@ EZGripper Action Server Module
 from functools import partial
 from math import fabs
 import rclpy
+from rclpy.qos import QoSProfile, \
+    QoSHistoryPolicy, QoSDurabilityPolicy, QoSReliabilityPolicy
 from rclpy.node import Node
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from std_srvs.srv import Empty
 from control_msgs.action import GripperCommand
 from sensor_msgs.msg import JointState
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
-from py_trees_ros.utilities import qos_profile_unlatched
 from libezgripper import create_connection, Gripper
 
+
+qos_unlatched = QoSProfile( \
+    history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST, \
+    depth=1, \
+    durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE, \
+    reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE
+)
 
 class GripperAction(Node):
     """
@@ -107,11 +115,10 @@ class GripperAction(Node):
             )
 
         # Publishers
-        self.joint_state_pub = self.create_publisher(JointState, "/joint_states", \
-            qos_profile_unlatched())
-
-        self.diagnostics_pub = self.create_publisher(DiagnosticArray, "/diagnostics", \
-            qos_profile_unlatched())
+        self.joint_state_pub = \
+            self.create_publisher(JointState, "/joint_states", qos_unlatched())
+        self.diagnostics_pub = \
+            self.create_publisher(DiagnosticArray, "/diagnostics", qos_unlatched())
 
         # Timers
         self.create_timer(self.time_period, self.joint_state_update)
@@ -165,13 +172,23 @@ class GripperAction(Node):
 
             gripper = self.grippers[action_name]
 
+            temp_msg = KeyValue()
+            temp_msg.key = 'Temperature'
+
+            volt_msg = KeyValue()
+            volt_msg.key = 'Voltage'
+
             for servo in gripper.servos:
                 status = DiagnosticStatus()
                 status.name = "Gripper '%s' servo %d"%(gripper.name, servo.servo_id)
                 status.hardware_id = '%s'%servo.servo_id
                 temperature = servo.read_temperature()
-                status.values.append(KeyValue('Temperature', str(temperature)))
-                status.values.append(KeyValue('Voltage', str(servo.read_voltage())))
+
+                temp_msg.value = str(temperature)
+                volt_msg.value = str(servo.read_voltage())
+
+                status.values.append(temp_msg)
+                status.values.append(volt_msg)
 
                 if temperature >= 70:
                     status.level = DiagnosticStatus.ERROR
@@ -260,7 +277,7 @@ class GripperAction(Node):
             use_percentages = False, \
                 gripper_module = module_type) - position) < self._positional_buffer
 
-    def _publish_feedback_and_update_result(self, action_name, module_type, position, effort):
+    def _publish_feedback(self, action_name, module_type, position, effort):
         """
         Publish Gripper Feedback and Update Result
         """
@@ -268,7 +285,6 @@ class GripperAction(Node):
             use_percentages = False, gripper_module = module_type)
         self._feedback.effort = effort
         self._feedback.reached_goal = self._check_state(action_name, module_type, position)
-        self._result = self._feedback
         return self._feedback
 
     def _execute_callback(self, action_name, module_type, goal_handle):
@@ -290,7 +306,7 @@ class GripperAction(Node):
 
             # Publish Feedback and Update Result
             goal_handle.publish_feedback( \
-                self._publish_feedback_and_update_result( \
+                self._publish_feedback( \
                     action_name, module_type, position, effort))
 
             # Command gripper
@@ -299,12 +315,24 @@ class GripperAction(Node):
             # Check if goal is reached
             if self._check_state(action_name, module_type, position):
                 goal_handle.succeed()
-                self.get_logger().info("Gripper has reached desired position")
-                return
+                break
 
             rate.sleep()
 
-        self.get_logger().info("Gripper has grasped an object")
+        if not self._feedback.reached_goal:
+            self.get_logger().info("Gripper has grasped an object")
+            self._result.stalled = True
+
+        else:
+            self.get_logger().info("Gripper has reached desired position")
+            self._result.stalled = False
+
+        self._result.reached_goal = self._feedback.reached_goal
+        self._result.position = self._feedback.position
+        self._result.effort = self._feedback.effort
+
+        return self._result
+
 
 
 def main(args=None):

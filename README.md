@@ -35,19 +35,19 @@ A ROS package that serves as a driver to the [EZGripper module](https://sakerobo
 
 * Launch the gripper module in RViz :
 
-	  ros2 launch ezgripper_driver display.launch.py ezgripper_module:=${ezgripper_module}
+	  ros2 launch ezgripper_description display.launch.py ezgripper_module:=${ezgripper_module}
 
 * Similarly to launch in Gazebo:
 
-	  ros2 launch ezgripper_driver gazebo.launch.py ezgripper_module:=${ezgripper_module}
+	  ros2 launch ezgripper_gazebo gazebo.launch.py ezgripper_module:=${ezgripper_module}
 
 * To actuate the gripper into its respective open/close configurations in Gazebo:
 
 	  # Open Gripper
-	  ros2 run ezgripper_driver open_gripper
+	  ros2 run ezgripper_control open_gripper
 
 	  # Close Gripper
-	  ros2 run ezgripper_driver close_gripper
+	  ros2 run ezgripper_control close_gripper
 
 * Result of actuation:
 

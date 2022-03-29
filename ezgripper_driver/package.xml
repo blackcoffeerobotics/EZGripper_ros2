@@ -30,9 +30,7 @@
   <exec_depend>moveit</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>ros2_controllers</exec_depend>
-
-	<!-- Gazebo mimic dependencies -->
-	<!-- <exec_depend>roboticsgroup_upatras_gazebo_plugins</exec_depend> -->
+	<exec_depend>gripper_controllers</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
