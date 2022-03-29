@@ -140,8 +140,11 @@ class GripperAction(Node):
             if module_type == 'dual_gen1' or module_type == 'quad':
                 finger_joint = 'left_ezgripper_knuckle_1'
 
-            elif module_type == 'dual_gen2':
+            elif module_type == 'dual_gen2' or module_type == 'dual_gen2_single_mount':
                 finger_joint = 'left_ezgripper_knuckle_palm_L1_1'
+
+            elif module_type == 'dual_gen2_triple_mount':
+                finger_joint = 'left1_ezgripper_knuckle_palm_L1_1'
 
             msg.name = [finger_joint]
 
