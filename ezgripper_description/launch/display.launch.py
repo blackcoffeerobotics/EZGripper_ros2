@@ -26,7 +26,7 @@ def generate_launch_description():
     # ...............................................................
 
 
-    pkg_dir = get_package_share_directory('ezgripper_driver')
+    pkg_dir = get_package_share_directory('ezgripper_description')
 
     return LaunchDescription([
 

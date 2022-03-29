@@ -36,6 +36,7 @@ EZGripper Action Server Module
 
 from functools import partial
 from math import fabs
+import time
 import rclpy
 from rclpy.qos import QoSProfile, \
     QoSHistoryPolicy, QoSDurabilityPolicy, QoSReliabilityPolicy
@@ -57,8 +58,7 @@ qos_unlatched = QoSProfile( \
 
 class GripperAction(Node):
     """
-    GripperCommand Action Server to send Feedback to MoveIt! and
-        to recieve goals from MoveIt!
+    GripperCommand Action Server
     """
 
     _feedback = GripperCommand.Feedback()
@@ -116,9 +116,9 @@ class GripperAction(Node):
 
         # Publishers
         self.joint_state_pub = \
-            self.create_publisher(JointState, "/joint_states", qos_unlatched())
+            self.create_publisher(JointState, "/joint_states", qos_unlatched)
         self.diagnostics_pub = \
-            self.create_publisher(DiagnosticArray, "/diagnostics", qos_unlatched())
+            self.create_publisher(DiagnosticArray, "/diagnostics", qos_unlatched)
 
         # Timers
         self.create_timer(self.time_period, self.joint_state_update)
@@ -279,7 +279,7 @@ class GripperAction(Node):
 
     def _publish_feedback(self, action_name, module_type, position, effort):
         """
-        Publish Gripper Feedback and Update Result
+        Publish Gripper Feedback
         """
         self._feedback.position = self.grippers[action_name].get_position( \
             use_percentages = False, gripper_module = module_type)
@@ -297,14 +297,12 @@ class GripperAction(Node):
         position = goal_handle.request.command.position
         effort = goal_handle.request.command.max_effort
 
-        rate = self.create_rate(100)
         start_time = self.get_time()
 
         # Iterate until goal is reached or timeout
-        while rclpy.ok() \
-            and self.now_from_start(start_time) < self._timeout:
+        while self.now_from_start(start_time) < self._timeout:
 
-            # Publish Feedback and Update Result
+            # Publish Feedback
             goal_handle.publish_feedback( \
                 self._publish_feedback( \
                     action_name, module_type, position, effort))
@@ -317,15 +315,14 @@ class GripperAction(Node):
                 goal_handle.succeed()
                 break
 
-            rate.sleep()
+            time.sleep(0.01)
 
         if not self._feedback.reached_goal:
             self.get_logger().info("Gripper has grasped an object")
-            self._result.stalled = True
+            goal_handle.succeed()
 
         else:
             self.get_logger().info("Gripper has reached desired position")
-            self._result.stalled = False
 
         self._result.reached_goal = self._feedback.reached_goal
         self._result.position = self._feedback.position
