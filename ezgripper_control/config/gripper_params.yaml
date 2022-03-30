@@ -1,9 +1,10 @@
 ezgripper_controller:
   ros__parameters:
 
-    no_of_grippers: 1
     port: /dev/ttyUSB0
     baudrate: 57600
+
+    no_of_grippers: 1
 
     gripper_1:
       action_name: gripper_cmd

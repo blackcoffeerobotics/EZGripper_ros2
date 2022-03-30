@@ -34,9 +34,9 @@ EZGripper Action Server Module
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+import time
 from functools import partial
 from math import fabs
-import time
 import rclpy
 from rclpy.qos import QoSProfile, \
     QoSHistoryPolicy, QoSDurabilityPolicy, QoSReliabilityPolicy
@@ -83,8 +83,7 @@ class GripperAction(Node):
         self.no_of_grippers = self.get_parameter('no_of_grippers').value
 
         self.grippers = {}
-        connection = \
-            create_connection(dev_name=self.port, baudrate=self.baudrate)
+        connection = create_connection(dev_name=self.port, baudrate=self.baudrate)
 
         for i in range(1, int(self.no_of_grippers) + 1):
 
@@ -115,10 +114,8 @@ class GripperAction(Node):
             )
 
         # Publishers
-        self.joint_state_pub = \
-            self.create_publisher(JointState, "/joint_states", qos_unlatched)
-        self.diagnostics_pub = \
-            self.create_publisher(DiagnosticArray, "/diagnostics", qos_unlatched)
+        self.joint_state_pub = self.create_publisher(JointState, "/joint_states", qos_unlatched)
+        self.diagnostics_pub = self.create_publisher(DiagnosticArray, "/diagnostics", qos_unlatched)
 
         # Timers
         self.create_timer(self.time_period, self.joint_state_update)
@@ -229,12 +226,12 @@ class GripperAction(Node):
         time_msg = self.get_clock().now().to_msg()
         return float(time_msg.sec) + (float(time_msg.nanosec) * 1e-9)
 
-    def now_from_start(self, start):
+    def now_from_start(self, start_time):
         """
+        start_time is in seconds
         Get time difference from start time
         """
-        time_msg = self.get_clock().now().to_msg()
-        return float(time_msg.sec) + (float(time_msg.nanosec) * 1e-9) - start
+        return self.get_time() - start_time
 
     def _goal_callback(self, goal_request):
         """
