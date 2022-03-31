@@ -26,7 +26,9 @@ find_package(ament_cmake REQUIRED)
 install(DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME})
 
-install(PROGRAMS scripts/open_gripper scripts/close_gripper
+install(PROGRAMS
+  scripts/open_gripper
+  scripts/close_gripper
   DESTINATION lib/${PROJECT_NAME})
 
 # .....................................................

@@ -26,7 +26,10 @@ find_package(ament_cmake REQUIRED)
 install(DIRECTORY launch scripts
   DESTINATION share/${PROJECT_NAME})
 
-install(PROGRAMS scripts/ezgripper_action_server.py
+install(PROGRAMS
+  scripts/ezgripper_action_server.py
+  scripts/ezgripper_joy_action_client.py
+  scripts/ezgripper_gui.py
   DESTINATION lib/${PROJECT_NAME})
 
 # .....................................................

@@ -61,9 +61,6 @@ class GripperAction(Node):
     GripperCommand Action Server
     """
 
-    _feedback = GripperCommand.Feedback()
-    _result = GripperCommand.Result()
-
     def __init__(self):
         super().__init__('ezgripper_controller')
 
@@ -71,7 +68,7 @@ class GripperAction(Node):
         self.time_period = 1./self.update_rate
 
         self._timeout = 3.0
-        self._positional_buffer = 0.05
+        self._positional_buffer = 0.1
         self.all_servos = []
 
         self.declare_parameter('port')
@@ -82,18 +79,27 @@ class GripperAction(Node):
         self.baudrate = self.get_parameter('baudrate').value
         self.no_of_grippers = self.get_parameter('no_of_grippers').value
 
+        self._feedback = {}
+        self._result = {}
         self.grippers = {}
+        self.joint_state_pub = {}
+
         connection = create_connection(dev_name=self.port, baudrate=self.baudrate)
 
         for i in range(1, int(self.no_of_grippers) + 1):
 
-            self.declare_parameter('gripper_%s.action_name' % str(i))
-            self.declare_parameter('gripper_%s.servo_ids' % str(i))
-            self.declare_parameter('gripper_%s.module_type' % str(i))
+            self.declare_parameter('gripper_{}.action_name'.format(i))
+            self.declare_parameter('gripper_{}.servo_ids'.format(i))
+            self.declare_parameter('gripper_{}.module_type'.format(i))
+            self.declare_parameter('gripper_{}.robot_ns'.format(i))
 
-            action_name = self.get_parameter('gripper_%s.action_name' % str(i)).value
-            servo_ids = self.get_parameter('gripper_%s.servo_ids' % str(i)).value
-            module_type = self.get_parameter('gripper_%s.module_type' % str(i)).value
+            action_name = self.get_parameter('gripper_{}.action_name'.format(i)).value
+            servo_ids = self.get_parameter('gripper_{}.servo_ids'.format(i)).value
+            module_type = self.get_parameter('gripper_{}.module_type'.format(i)).value
+            robot_ns = self.get_parameter('gripper_{}.robot_ns'.format(i)).value
+
+            self._feedback[action_name] = GripperCommand.Feedback()
+            self._result[action_name] = GripperCommand.Result()
 
             self.grippers[action_name] = Gripper(connection, action_name, servo_ids)
             self.all_servos += self.grippers[action_name].servos
@@ -101,20 +107,24 @@ class GripperAction(Node):
             self.grippers[action_name].calibrate()
             self.grippers[action_name].open()
 
-            self.create_service(Empty, '~/'+ action_name + '/calibrate', \
-                partial(self.calibrate_srv, action_name))
+            self.joint_state_pub[action_name] = \
+                self.create_publisher(JointState, '/{}/joint_states'.format(robot_ns), \
+                    qos_unlatched)
+
+            self.create_service(Empty, \
+                robot_ns + '/ezgripper_controller/'+ action_name + '/calibrate', \
+                    partial(self.calibrate_srv, action_name))
 
             ActionServer( \
                 self, \
                 GripperCommand, \
-                '~/' + action_name, \
+                robot_ns + '/ezgripper_controller/'+ action_name, \
                 goal_callback = self._goal_callback,
                 cancel_callback = self._cancel_callback,
                 execute_callback = partial(self._execute_callback, action_name, module_type)
             )
 
         # Publishers
-        self.joint_state_pub = self.create_publisher(JointState, "/joint_states", qos_unlatched)
         self.diagnostics_pub = self.create_publisher(DiagnosticArray, "/diagnostics", qos_unlatched)
 
         # Timers
@@ -131,8 +141,8 @@ class GripperAction(Node):
 
         for i in range(1, int(self.no_of_grippers) + 1):
 
-            action_name = self.get_parameter('gripper_%s.action_name' % str(i)).value
-            module_type = self.get_parameter('gripper_%s.module_type' % str(i)).value
+            action_name = self.get_parameter('gripper_{}.action_name'.format(i)).value
+            module_type = self.get_parameter('gripper_{}.module_type'.format(i)).value
 
             current_gripper_position = self.grippers[action_name].get_position( \
                 use_percentages = False, gripper_module=module_type)
@@ -152,7 +162,7 @@ class GripperAction(Node):
 
             msg.name = [finger_joint]
 
-            self.joint_state_pub.publish(msg)
+            self.joint_state_pub[action_name].publish(msg)
 
 
     def diagnostics_and_servo_update(self):
@@ -165,7 +175,7 @@ class GripperAction(Node):
         msg.header.stamp = self.get_clock().now().to_msg()
 
         for i in range(1, int(self.no_of_grippers) + 1):
-            action_name = self.get_parameter('gripper_%s.action_name' % str(i)).value
+            action_name = self.get_parameter('gripper_{}.action_name'.format(i)).value
 
             gripper = self.grippers[action_name]
 
@@ -177,8 +187,8 @@ class GripperAction(Node):
 
             for servo in gripper.servos:
                 status = DiagnosticStatus()
-                status.name = "Gripper '%s' servo %d"%(gripper.name, servo.servo_id)
-                status.hardware_id = '%s'%servo.servo_id
+                status.name = "Gripper - {}, Servo - {}".format(gripper.name, servo.servo_id)
+                status.hardware_id = '{}'.format(servo.servo_id)
                 temperature = servo.read_temperature()
 
                 temp_msg.value = str(temperature)
@@ -278,11 +288,12 @@ class GripperAction(Node):
         """
         Publish Gripper Feedback
         """
-        self._feedback.position = self.grippers[action_name].get_position( \
+        self._feedback[action_name].position = self.grippers[action_name].get_position( \
             use_percentages = False, gripper_module = module_type)
-        self._feedback.effort = effort
-        self._feedback.reached_goal = self._check_state(action_name, module_type, position)
-        return self._feedback
+        self._feedback[action_name].effort = effort
+        self._feedback[action_name].reached_goal = \
+            self._check_state(action_name, module_type, position)
+        return self._feedback[action_name]
 
     def _execute_callback(self, action_name, module_type, goal_handle):
         """
@@ -308,24 +319,24 @@ class GripperAction(Node):
             self._command_gripper(action_name, module_type, position, effort)
 
             # Check if goal is reached
-            if self._check_state(action_name, module_type, position):
+            if self._feedback[action_name].reached_goal:
                 goal_handle.succeed()
                 break
 
             time.sleep(0.01)
 
-        if not self._feedback.reached_goal:
+        if not self._feedback[action_name].reached_goal:
             self.get_logger().info("Gripper has grasped an object")
             goal_handle.succeed()
 
         else:
             self.get_logger().info("Gripper has reached desired position")
 
-        self._result.reached_goal = self._feedback.reached_goal
-        self._result.position = self._feedback.position
-        self._result.effort = self._feedback.effort
+        self._result[action_name].reached_goal = self._feedback[action_name].reached_goal
+        self._result[action_name].position = self._feedback[action_name].position
+        self._result[action_name].effort = self._feedback[action_name].effort
 
-        return self._result
+        return self._result[action_name]
 
 
 
