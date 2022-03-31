@@ -19,7 +19,7 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 
 * Clone the ROS2 Driver at your `src` folder:
 
-   	  git clone --branch=foxy-devel https://github.com/SAKErobotics/EZGripper.git
+   	  git clone --branch=foxy-devel https://github.com/blackcoffeerobotics/EZGripper_ros2.git
 
 * Build your workspace and source it:
 
