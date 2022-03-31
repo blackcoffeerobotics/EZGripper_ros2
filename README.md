@@ -1,13 +1,13 @@
 # EZGripper
 
-A ROS package that serves as a driver to the [EZGripper module](https://sakerobotics.com/) designed by SAKE Robotics. If you are not using ROS, use https://github.com/SAKErobotics/SAKErobotics
+A ROS2 package that serves as a driver to the [EZGripper module](https://sakerobotics.com/) designed by SAKE Robotics. If you are not using ROS, use https://github.com/SAKErobotics/SAKErobotics
 
 ## Tutorial
 
-### Hardware
+### Installation
 ---
 
-* Install the python EZGripper library. For python2 use [this link](https://github.com/SAKErobotics/libezgripper/tree/master) and for python3 use [the ubuntu 20.04 branch](https://github.com/SAKErobotics/libezgripper/tree/ubuntu-20.04).
+* Install the python EZGripper library. Use the python3 version from [the ubuntu 20.04 branch](https://github.com/SAKErobotics/libezgripper/tree/ubuntu-20.04).
 
 * Install `gazebo_ros2_control` to enable Gazebo to mimic the EZGripper joints:
 
@@ -17,21 +17,33 @@ A ROS package that serves as a driver to the [EZGripper module](https://sakerobo
 
 	  rosdep install --from-paths src --ignore-src -r -y
 
-* Clone the ROS Driver at you `src` folder:
+* Clone the ROS2 Driver at your `src` folder:
 
    	  git clone --branch=foxy-devel https://github.com/SAKErobotics/EZGripper.git
 
 * Build your workspace and source it:
 
-	  colcon build --symlink-install --packages-select ezgripper_control ezgripper_description ezgripper_driver ezgripper_gazebo  ezgripper_dual_gen1_moveit_config  ezgripper_dual_gen2_moveit_config ezgripper_dual_gen2_single_mount_moveit_config ezgripper_dual_gen2_triple_mount_moveit_config ezgripper_quad_moveit_config gazebo_ros2_control --allow-overriding ezgripper_control ezgripper_description ezgripper_driver ezgripper_gazebo  ezgripper_dual_gen1_moveit_config  ezgripper_dual_gen2_moveit_config ezgripper_dual_gen2_single_mount_moveit_config ezgripper_dual_gen2_triple_mount_moveit_config ezgripper_quad_moveit_config gazebo_ros2_control && source install/setup.bash
+	  colcon build --symlink-install
+	  source install/setup.bash
 
 
-### Software
----
-
-* Set the bash variable according to your gripper module - (`dual_gen1`, `dual_gen2`, `quad`):
+* Set the following bash variable according to your gripper module version. Add this line to your ~/.bashrc file
 
 	  export ezgripper_module=<your_gripper_module>
+
+	E.g. for `dual_gen2_single_mount` the command would be 
+
+	  export ezgripper_module=dual_gen2_single_mount
+
+	or for `dual_gen2_triple_mount` the command would be
+
+	  export ezgripper_module=dual_gen2_triple_mount
+
+* For testing hardware through a joystick, connect your USB joystick to the system and execute:
+
+      ros2 launch ezgripper_driver joy.launch.py
+### Simulation testing
+---
 
 * Launch the gripper module in RViz :
 
