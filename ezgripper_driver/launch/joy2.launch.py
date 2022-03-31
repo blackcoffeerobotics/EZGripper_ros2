@@ -37,6 +37,18 @@ def generate_launch_description():
             parameters=[config],
             output='screen',
             emulate_tty=True,
-        )
+        ),
 
+        Node(
+            package='joy',
+            executable='joy_node',
+            name='joy_node',
+            output='screen',
+            emulate_tty=True,
+            parameters=[{
+                "device_name": "/dev/input/js0",
+                "autorepeat_rate": 10.0,
+            }],
+
+        ),
     ])
