@@ -46,7 +46,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             parameters=[{
-                "device_name": "/dev/input/js0",
+                "dev": "/dev/input/js0",
                 "autorepeat_rate": 10.0,
             }],
 

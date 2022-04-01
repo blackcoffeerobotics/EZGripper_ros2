@@ -128,12 +128,6 @@ def generate_launch_description():
 
             IncludeLaunchDescription( \
                 PythonLaunchDescriptionSource( \
-                    os.path.join(get_package_share_directory("ezgripper_control"), \
-                        'launch', 'control.launch.py'))
-            ),
-
-            IncludeLaunchDescription( \
-                PythonLaunchDescriptionSource( \
                     os.path.join(get_package_share_directory("ezgripper_gazebo"), \
                         'launch', 'gazebo.launch.py')),
                 launch_arguments={

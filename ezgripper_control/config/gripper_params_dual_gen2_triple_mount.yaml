@@ -1,4 +1,4 @@
-ezgripper_controller:
+/**:
   ros__parameters:
 
     port: /dev/ttyUSB0

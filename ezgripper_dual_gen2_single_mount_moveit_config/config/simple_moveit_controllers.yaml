@@ -2,9 +2,9 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 
 moveit_simple_controller_manager:
   controller_names:
-    - ezgripper_controller
+    - ezgripper_dual_gen2_single_mount/ezgripper_controller
 
-  ezgripper_controller:
+  ezgripper_dual_gen2_single_mount/ezgripper_controller:
     action_ns: gripper_cmd
     type: GripperCommand
     default: true

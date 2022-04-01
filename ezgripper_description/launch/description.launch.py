@@ -20,7 +20,7 @@ def generate_launch_description():
 
     gui = True
 
-    ezgripper_module = 'dual_gen1'
+    ezgripper_module = 'dual_gen2_single_mount'
 
     # ...............................................................
 
