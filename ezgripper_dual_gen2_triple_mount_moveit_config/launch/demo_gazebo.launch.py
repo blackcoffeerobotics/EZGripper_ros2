@@ -109,7 +109,9 @@ def generate_launch_description():
                     simple_moveit_controllers_yaml,
                     planning_scene_yaml,
                     joint_limits_yaml
-                ]
+                ],
+                remappings={'/joint_states': ['/ezgripper_', \
+                    LaunchConfiguration("ezgripper_module"), '/joint_states']}.items()
             ),
 
             Node(

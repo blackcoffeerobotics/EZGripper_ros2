@@ -76,6 +76,8 @@ def generate_launch_description():
                 executable="robot_state_publisher",
                 name="robot_state_publisher",
                 parameters=[robot_description],
+                remappings={'/joint_states': \
+                    '/ezgripper_dual_gen2_single_mount/joint_states'}.items()
             ),
 
             Node(
@@ -91,7 +93,9 @@ def generate_launch_description():
                     simple_moveit_controllers_yaml,
                     planning_scene_yaml,
                     joint_limits_yaml
-                ]
+                ],
+                remappings={'/joint_states': \
+                    '/ezgripper_dual_gen2_single_mount/joint_states'}.items()
             ),
 
             Node(
