@@ -22,7 +22,7 @@ def generate_launch_description():
     use_sim_time = True
 
     world_name = 'mars.world'
-    ezgripper_module = 'dual_gen2'
+    ezgripper_module = 'dual_gen2_single_mount'
 
     # ...............................................................
 
@@ -81,7 +81,10 @@ def generate_launch_description():
         IncludeLaunchDescription( \
             PythonLaunchDescriptionSource( \
                 os.path.join(get_package_share_directory("ezgripper_control"), \
-                    'launch', 'control.launch.py'))
-        )
+                    'launch', 'control.launch.py')),
+            launch_arguments={
+                'ezgripper_module': LaunchConfiguration('ezgripper_module'),
+                }.items(),
+        ),
 
     ])

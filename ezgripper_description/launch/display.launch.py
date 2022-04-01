@@ -21,7 +21,7 @@ def generate_launch_description():
     gui = True
     rviz_config = 'urdf.rviz'
 
-    ezgripper_module = 'dual_gen1'
+    ezgripper_module = 'dual_gen2_single_mount'
 
     # ...............................................................
 

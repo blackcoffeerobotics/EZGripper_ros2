@@ -22,5 +22,5 @@ echo No such ezgripper module found.
 exit 1
 fi
 
-ros2 action send_goal /ezgripper_controller/gripper_cmd \
+ros2 action send_goal /ezgripper_$ezgripper_module/ezgripper_controller/gripper_cmd \
   control_msgs/action/GripperCommand "command: {position: $close_position, max_effort: $max_effort}"

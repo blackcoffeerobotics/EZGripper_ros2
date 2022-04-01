@@ -1,12 +1,14 @@
-controller_manager:
-  ros__parameters:
-    update_rate: 1000  # Hz
+ezgripper_dual_gen2_triple_mount:
 
-    ezgripper_controller:
-      type: position_controllers/GripperActionController
+  controller_manager:
+    ros__parameters:
+      update_rate: 1000  # Hz
 
-ezgripper_controller:
-  ros__parameters:
-    joint: left1_ezgripper_knuckle_palm_L1_1
-    max_effort: 1.0
-    pid: {p: 100.0, i: 0.01, d: 10.0, i_clamp: 0.0}
+      ezgripper_controller:
+        type: position_controllers/GripperActionController
+
+  ezgripper_controller:
+    ros__parameters:
+      joint: left1_ezgripper_knuckle_palm_L1_1
+      max_effort: 1.0
+      pid: {p: 100.0, i: 0.01, d: 10.0, i_clamp: 0.0}

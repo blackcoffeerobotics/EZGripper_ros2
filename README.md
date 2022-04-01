@@ -31,7 +31,7 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 
 	  export ezgripper_module=<your_gripper_module>
 
-	E.g. for `dual_gen2_single_mount` the command would be 
+	E.g. for `dual_gen2_single_mount` the command would be
 
 	  export ezgripper_module=dual_gen2_single_mount
 
@@ -42,6 +42,7 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 * For testing hardware through a joystick, connect your USB joystick to the system and execute:
 
       ros2 launch ezgripper_driver joy.launch.py
+
 ### Simulation testing
 ---
 
