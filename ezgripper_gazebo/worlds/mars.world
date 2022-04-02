@@ -5,7 +5,7 @@
 	  <!-- Position the camera -->
     <gui>
       <camera name="gzclient_camera">
-				<pose>0.82 -0.74 0.38 0 0.16 2.29</pose>
+				<pose>0.48 -0.44 0.35 0 0.14 2.29</pose>
       </camera>
     </gui>
 
