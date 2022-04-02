@@ -42,6 +42,7 @@ from rclpy.qos import QoSProfile, \
     QoSHistoryPolicy, QoSDurabilityPolicy, QoSReliabilityPolicy
 from rclpy.node import Node
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
+from rcl_interfaces.srv import GetParameters
 from std_srvs.srv import Empty
 from control_msgs.action import GripperCommand
 from sensor_msgs.msg import JointState
@@ -83,6 +84,7 @@ class GripperAction(Node):
         self._result = {}
         self.grippers = {}
         self.joint_state_pub = {}
+        self.effort_dict = {}
 
         connection = create_connection(dev_name=self.port, baudrate=self.baudrate)
 
@@ -106,6 +108,17 @@ class GripperAction(Node):
 
             self.grippers[action_name].calibrate()
             self.grippers[action_name].open()
+
+            # Trigger parametric callback for effort
+            self.parametric_client = self.create_client(GetParameters, \
+                '/moveit_simple_controller_manager/get_parameters')
+            parametric_request = GetParameters.Request()
+            parametric_request.names = [ \
+                'moveit_simple_controller_manager.{}/ezgripper_controller.max_effort'.format( \
+                    robot_ns)]
+            future = self.parametric_client.call_async(parametric_request)
+            future.add_done_callback(partial(self.callback_global_param, action_name))
+
 
             self.joint_state_pub[action_name] = \
                 self.create_publisher(JointState, '/{}/joint_states'.format(robot_ns), \
@@ -132,6 +145,20 @@ class GripperAction(Node):
         self.create_timer(1.0, self.diagnostics_and_servo_update)
 
         self.get_logger().info('Gripper server ready')
+
+
+
+    def callback_global_param(self, action_name, future):
+        """
+        Global Parameter Callback
+        """
+        try:
+            result = future.result()
+        except Exception as e:
+            self.get_logger().warn("service call failed %r" % (e,))
+        else:
+            param = result.values[0]
+            self.effort_dict[action_name] = param.double_value
 
 
     def joint_state_update(self):
@@ -303,7 +330,12 @@ class GripperAction(Node):
         self.get_logger().debug('Gripper executing goal...')
 
         position = goal_handle.request.command.position
-        effort = goal_handle.request.command.max_effort
+
+        if self.effort_dict[action_name] == 0.0:
+            effort = goal_handle.request.command.max_effort
+        else:
+            effort = self.effort_dict[action_name]
+
 
         start_time = self.get_time()
 

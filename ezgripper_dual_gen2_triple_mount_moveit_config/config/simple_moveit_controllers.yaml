@@ -7,6 +7,6 @@ moveit_simple_controller_manager:
   ezgripper_dual_gen2_triple_mount/ezgripper_controller:
     action_ns: gripper_cmd
     type: GripperCommand
-    default: true
+    max_effort: 1.0
     joints:
       - left1_ezgripper_knuckle_palm_L1_1
