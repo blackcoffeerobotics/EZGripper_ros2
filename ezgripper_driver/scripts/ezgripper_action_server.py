@@ -112,6 +112,15 @@ class GripperAction(Node):
             # Trigger parametric callback for effort
             self.parametric_client = self.create_client(GetParameters, \
                 '/moveit_simple_controller_manager/get_parameters')
+
+            if self.parametric_client.wait_for_service(timeout_sec = 3.0):
+                self.get_logger().info('MoveIt! parameter service found')
+
+            else:
+                self.get_logger().info('MoveIt! parameter service not found')
+                self.effort_dict[action_name] = 0.0
+
+
             parametric_request = GetParameters.Request()
             parametric_request.names = [ \
                 'moveit_simple_controller_manager.{}/ezgripper_controller.max_effort'.format( \
@@ -154,8 +163,8 @@ class GripperAction(Node):
         """
         try:
             result = future.result()
-        except Exception as e:
-            self.get_logger().warn("service call failed %r" % (e,))
+        except Exception as error:
+            self.get_logger().warn("service call failed {}".format(error))
         else:
             param = result.values[0]
             self.effort_dict[action_name] = param.double_value
@@ -289,8 +298,8 @@ class GripperAction(Node):
         Actuate gripper to position and effort
         """
         # Debug string
-        self.get_logger().info("Execute goal: position=%.1f, max_effort=%.1f"%
-                      (position, effort))
+        self.get_logger().info( \
+            "Execute goal: position={:.1f}, max_effort={:.1f}".format(position, effort))
 
         # Actuate Gripper
         if effort == 0.0:
