@@ -15,7 +15,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 
-PKG_DIR = get_package_share_directory("ezgripper_dual_gen2_triple_mount_moveit_config")
+PKG_DIR = get_package_share_directory("ezgripper_single_mount_moveit_config")
 
 
 def load_params(file_path, is_yaml = True):
@@ -38,15 +38,14 @@ rviz_config = os.path.join(PKG_DIR, 'launch', 'moveit.rviz')
 
 robot_description_config = xacro.process_file( \
         os.path.join(get_package_share_directory("ezgripper_description"), \
-            "urdf", "dual_gen2_triple_mount", \
-                "ezgripper_dual_gen2_triple_mount_standalone.urdf.xacro")
+            "urdf", "ezgripper_single_mount_standalone.urdf.xacro")
     )
 
 robot_description = {"robot_description": robot_description_config.toxml()}
 
 robot_description_semantic = { \
     "robot_description_semantic": load_params( \
-        "config/ezgripper_dual_gen2_triple_mount.srdf", is_yaml= False)}
+        "config/ezgripper_single_mount.srdf", is_yaml= False)}
 
 kinematics_yaml = load_params("config/kinematics.yaml")
 
@@ -75,7 +74,6 @@ def generate_launch_description():
     gui = False
 
     world_name = 'mars.world'
-    ezgripper_module = 'dual_gen2_triple_mount'
 
     # ...............................................................
 
@@ -91,11 +89,6 @@ def generate_launch_description():
                 default_value=world_name, \
                     description="Choice of Gazebo World"),
 
-            DeclareLaunchArgument('ezgripper_module', \
-                default_value=ezgripper_module, \
-                    description='Required module of ezgripper'),
-
-
             Node(
                 package="moveit_ros_move_group",
                 executable="move_group",
@@ -110,8 +103,7 @@ def generate_launch_description():
                     planning_scene_yaml,
                     joint_limits_yaml
                 ],
-                remappings={'/joint_states': ['/ezgripper_', \
-                    LaunchConfiguration("ezgripper_module"), '/joint_states']}.items()
+                remappings={'/joint_states': '/ezgripper_single_mount/joint_states'}.items()
             ),
 
             Node(
@@ -128,6 +120,7 @@ def generate_launch_description():
                 ],
             ),
 
+
             IncludeLaunchDescription( \
                 PythonLaunchDescriptionSource( \
                     os.path.join(get_package_share_directory("ezgripper_gazebo"), \
@@ -135,7 +128,6 @@ def generate_launch_description():
                 launch_arguments={
                     'gui': LaunchConfiguration('gui'),
                     'world_name': LaunchConfiguration('world_name'),
-                    'ezgripper_module': LaunchConfiguration('ezgripper_module'),
                     }.items(),
             ),
 

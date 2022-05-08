@@ -53,20 +53,10 @@ from std_srvs.srv import Empty
 # bool reached_goal # True iff the gripper position has reached the commanded setpoint
 #
 
-OPEN_DUAL_GEN1_POS = 1.5707
-CLOSE_DUAL_GEN1_POS = -0.27
 
-OPEN_DUAL_GEN2_POS = 0.0
-CLOSE_DUAL_GEN2_POS = 1.94
 
-OPEN_DUAL_GEN2_SINGLE_MOUNT_POS = -1.5707
-CLOSE_DUAL_GEN2_SINGLE_MOUNT_POS = 0.27
-
-OPEN_DUAL_GEN2_TRIPLE_MOUNT_POS = -1.5707
-CLOSE_DUAL_GEN2_TRIPLE_MOUNT_POS = 0.27
-
-OPEN_QUAD_POS = 1.5707
-CLOSE_QUAD_POS = -0.27
+OPEN_SINGLE_MOUNT_POS = -1.5707
+CLOSE_SINGLE_MOUNT_POS = 0.27
 
 MIN_SIMULATED_EFFORT = 0.0
 MAX_SIMULATED_EFFORT = 1.0
@@ -80,42 +70,15 @@ def remap(input_val, in_min, in_max, out_min, out_max):
             (in_max - in_min) + out_min
 
 
-def remap_on_module_type(module_type, current_position):
-    """
-    Remap based on module_type
-    """
-
-    if module_type == "dual_gen1":
-        return remap(current_position, \
-            100.0, 0.0, OPEN_DUAL_GEN1_POS, CLOSE_DUAL_GEN1_POS)
-
-    elif module_type == "dual_gen2":
-        return remap(current_position, \
-            100.0, 0.0, OPEN_DUAL_GEN2_POS, CLOSE_DUAL_GEN2_POS)
-
-    elif module_type == "dual_gen2_single_mount":
-        return remap(current_position, \
-            100.0, 0.0, OPEN_DUAL_GEN2_SINGLE_MOUNT_POS, CLOSE_DUAL_GEN2_SINGLE_MOUNT_POS)
-
-    elif module_type == "dual_gen2_triple_mount":
-        return remap(current_position, \
-            100.0, 0.0, OPEN_DUAL_GEN2_TRIPLE_MOUNT_POS, CLOSE_DUAL_GEN2_TRIPLE_MOUNT_POS)
-
-    elif module_type == "quad":
-        return remap(current_position, \
-            100.0, 0.0, OPEN_QUAD_POS, CLOSE_QUAD_POS)
-
-
 class EZGripper():
     """
     EZGripper Class
     """
 
-    def __init__(self, node, module_type, action_name):
+    def __init__(self, node, action_name):
 
         self.node = node
         self.action_name = action_name
-        self._module_type = module_type
 
         self._grip_max = 100.0 # maximum open position for grippers - correlates to .17 meters
         self._grip_value = self._grip_max
@@ -176,7 +139,8 @@ class EZGripper():
             "ezgripper_interface: goto position {:.3f}".format(self._grip_value))
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, self._grip_value)
+        goal.command.position = \
+            remap(self._grip_value, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = 0.5
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: goto position done")
@@ -195,7 +159,8 @@ class EZGripper():
             "ezgripper_interface: goto position {:.3f}".format(self._grip_value))
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, self._grip_value)
+        goal.command.position = \
+            remap(self._grip_value, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = 0.5
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: goto position done")
@@ -209,7 +174,8 @@ class EZGripper():
             "ezgripper_interface: close, effort {:.3f}".format(max_effort))
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, 0.0)
+        goal.command.position = \
+            remap(0.0, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = max_effort
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: close done")
@@ -222,7 +188,8 @@ class EZGripper():
         self.node.get_logger().info("ezgripper_interface: hard close")
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, 0.0)
+        goal.command.position = \
+            remap(0.0, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = 1.0
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: hard close done")
@@ -235,7 +202,8 @@ class EZGripper():
         self.node.get_logger().info("ezgripper_interface: soft close")
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, 0.0)
+        goal.command.position = \
+            remap(0.0, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = 0.2
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: soft close done")
@@ -248,7 +216,8 @@ class EZGripper():
         self.node.get_logger().info("ezgripper_interface: open")
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, 100.0)
+        goal.command.position = \
+            remap(100.0, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = 1.0
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: open done")
@@ -262,7 +231,8 @@ class EZGripper():
             "ezgripper_interface: goto position {:.3f}".format(grip_position))
 
         goal = GripperCommand.Goal()
-        goal.command.position = remap_on_module_type(self._module_type, grip_position)
+        goal.command.position = \
+            remap(grip_position, 100.0, 0.0, OPEN_SINGLE_MOUNT_POS, CLOSE_SINGLE_MOUNT_POS)
         goal.command.max_effort = grip_effort / 100.0
         self._action_client.send_goal_async(goal, feedback_callback=self.feedback_callback)
         self.node.get_logger().info("ezgripper_interface: goto position done")
@@ -290,8 +260,7 @@ def main(args=None):
     rclpy.init(args=args)
     node = Node('ezgripper_interface_node')
 
-    ez_obj = EZGripper(node, 'dual_gen2_single_mount', \
-    '/ezgripper_dual_gen2_single_mount/ezgripper_controller/gripper_cmd')
+    ez_obj = EZGripper(node, '/ezgripper_single_mount/ezgripper_controller/gripper_cmd')
 
     ez_obj.open()
     ez_obj.calibrate()

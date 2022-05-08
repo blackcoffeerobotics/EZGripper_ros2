@@ -20,9 +20,6 @@ def generate_launch_description():
 
     gui = True
     rviz_config = 'urdf.rviz'
-
-    ezgripper_module = 'dual_gen2_single_mount'
-
     # ...............................................................
 
 
@@ -39,10 +36,6 @@ def generate_launch_description():
             default_value=rviz_config, \
                 description="RViz configuration file"),
 
-        DeclareLaunchArgument('ezgripper_module', \
-            default_value=ezgripper_module, \
-                description='Required module of ezgripper'),
-
         Node(
             package='rviz2',
             executable='rviz2',
@@ -57,7 +50,6 @@ def generate_launch_description():
                     'launch', 'description.launch.py')),
             launch_arguments={
                 'gui': LaunchConfiguration('gui'),
-                'ezgripper_module': LaunchConfiguration('ezgripper_module'),
                 }.items(),
         )
 

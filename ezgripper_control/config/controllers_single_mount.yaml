@@ -1,4 +1,4 @@
-ezgripper_dual_gen2_single_mount:
+ezgripper_single_mount:
 
   controller_manager:
     ros__parameters:
