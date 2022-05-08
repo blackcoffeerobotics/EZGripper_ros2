@@ -26,19 +26,6 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 	  colcon build --symlink-install
 	  source install/setup.bash
 
-
-* Set the following bash variable according to your gripper module version. Add this line to your ~/.bashrc file
-
-	  export ezgripper_module=<your_gripper_module>
-
-	E.g. for `dual_gen2_single_mount` the command would be
-
-	  export ezgripper_module=dual_gen2_single_mount
-
-	or for `dual_gen2_triple_mount` the command would be
-
-	  export ezgripper_module=dual_gen2_triple_mount
-
 * For testing hardware through a joystick, connect your USB joystick to the system and execute:
 
       ros2 launch ezgripper_driver joy.launch.py
@@ -48,11 +35,11 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 
 * Launch the gripper module in RViz :
 
-	  ros2 launch ezgripper_description display.launch.py ezgripper_module:=${ezgripper_module}
+	  ros2 launch ezgripper_description display.launch.py
 
 * Similarly to launch in Gazebo:
 
-	  ros2 launch ezgripper_gazebo gazebo.launch.py ezgripper_module:=${ezgripper_module}
+	  ros2 launch ezgripper_gazebo gazebo.launch.py
 
 * To actuate the gripper into its respective open/close configurations in Gazebo:
 
@@ -71,11 +58,11 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 
 * To launch the ezgripper in Gazebo and RViz for control:
 
-	  ros2 launch ezgripper_${ezgripper_module}_moveit_config demo_gazebo.launch.py
+	  ros2 launch ezgripper_single_mount_moveit_config demo_gazebo.launch.py
 
 * To control the ezgripper hardware through MoveIt!:
 
-	  ros2 launch ezgripper_${ezgripper_module}_moveit_config ezgripper_${ezgripper_module}_moveit_planning_execution.launch.py
+	  ros2 launch ezgripper_single_mount_moveit_config ezgripper_single_mount_moveit_planning_execution.launch.py
 
 
 ## Additional Configurations
@@ -95,7 +82,6 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 	**`action_name`** - <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name of the action to be used.<br/>
   **`servo_ids`** - <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list of servo ids to control. (several ids if several grippers are to be used as one group). For example `[9]` and `[10,11]` for two grippers.<br/>
 	By default, SAKE Robotics delivers its grippers with address 1 for Duals and 1 and 2 for Quads and 57kbps.<br/>
-  **`module_type`** - <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type of the gripper module. (`dual_gen1`, `dual_gen2`, `dual_gen2_single_mount`, `dual_gen2_triple_mount`, `quad`).<br/>
 	**`robot_ns`** - <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namespace of the robot.
 
 * Example launch files to support various EZGripper configurations.

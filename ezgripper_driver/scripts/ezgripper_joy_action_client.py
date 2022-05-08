@@ -55,13 +55,13 @@ class EZGripperJoy():
     EZGripper Joy Action Client
     """
 
-    def __init__(self, node, module_types, gripper_names):
+    def __init__(self, node, gripper_names):
 
         self.node = node
 
-        self.ezgripper_left = EZGripper(node, module_types[0], gripper_names[0])
+        self.ezgripper_left = EZGripper(node, gripper_names[0])
         if len(gripper_names) > 1:
-            self.ezgripper_right = EZGripper(node, module_types[1], gripper_names[1])
+            self.ezgripper_right = EZGripper(node, gripper_names[1])
         else:
             self.ezgripper_right = None
         self.last_command_end_time = self.get_time()
@@ -139,26 +139,21 @@ def main(args=None):
     no_of_grippers = node.get_parameter("no_of_grippers").value
 
     gripper_names = []
-    module_types = []
 
     for i in range(1, int(no_of_grippers) + 1):
 
         node.declare_parameter('gripper_{}.action_name'.format(i))
-        node.declare_parameter('gripper_{}.module_type'.format(i))
         node.declare_parameter('gripper_{}.robot_ns'.format(i))
 
         action_name = node.get_parameter( \
             'gripper_{}.action_name'.format(i)).value
-        module_type = node.get_parameter( \
-            'gripper_{}.module_type'.format(i)).value
         robot_ns = node.get_parameter( \
             'gripper_{}.robot_ns'.format(i)).value
 
-        module_types.append(module_type)
         gripper_names.append(robot_ns + '/ezgripper_controller/'+ action_name)
 
 
-    ezgripper_joy = EZGripperJoy(node, module_types, gripper_names)
+    ezgripper_joy = EZGripperJoy(node, gripper_names)
 
     node.create_subscription(Joy, '/joy', ezgripper_joy.joy_callback, qos_unlatched)
 

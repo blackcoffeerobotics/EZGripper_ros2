@@ -19,9 +19,6 @@ def generate_launch_description():
     # .................. Configurable Arguments .....................
 
     gui = True
-
-    ezgripper_module = 'dual_gen2_single_mount'
-
     # ...............................................................
 
 
@@ -35,19 +32,13 @@ def generate_launch_description():
             default_value=str(gui), \
                 description='Flag to enable joint_state_publisher_gui'),
 
-
-        DeclareLaunchArgument('ezgripper_module', \
-            default_value=ezgripper_module, \
-                description='Required module of ezgripper'),
-
         # Nodes
         Node(
             package='joint_state_publisher_gui',
             executable='joint_state_publisher_gui',
             name='joint_state_publisher_gui',
             condition=IfCondition(LaunchConfiguration('gui')),
-            remappings={'/joint_states': ['/ezgripper_', \
-                LaunchConfiguration("ezgripper_module"), '/joint_states']}.items()
+            remappings={'/joint_states': '/ezgripper_single_mount/joint_states'}.items()
         ),
 
         Node(
@@ -55,21 +46,15 @@ def generate_launch_description():
             executable='joint_state_publisher',
             name='joint_state_publisher',
             condition=UnlessCondition(LaunchConfiguration('gui')),
-            remappings={'/joint_states': ['/ezgripper_', \
-                LaunchConfiguration("ezgripper_module"), '/joint_states']}.items()
+            remappings={'/joint_states': '/ezgripper_single_mount/joint_states'}.items()
         ),
 
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             parameters=[{'robot_description': Command( \
-                ['xacro ', os.path.join(pkg_dir, 'urdf/'), \
-                    LaunchConfiguration("ezgripper_module"), "/", \
-                      "ezgripper_", LaunchConfiguration("ezgripper_module"), \
-                          '_standalone.urdf.xacro'
-                ])}],
-            remappings={'/joint_states': ['/ezgripper_', \
-                LaunchConfiguration("ezgripper_module"), '/joint_states']}.items()
+                ['xacro ', os.path.join(pkg_dir, 'urdf', 'ezgripper_single_mount_standalone.urdf.xacro')])}],
+            remappings={'/joint_states': '/ezgripper_single_mount/joint_states'}.items()
         )
 
     ])

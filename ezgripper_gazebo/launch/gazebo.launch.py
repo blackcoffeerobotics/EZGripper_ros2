@@ -22,8 +22,6 @@ def generate_launch_description():
     use_sim_time = True
 
     world_name = 'mars.world'
-    ezgripper_module = 'dual_gen2_single_mount'
-
     # ...............................................................
 
     pkg_dir = get_package_share_directory('ezgripper_gazebo')
@@ -45,10 +43,6 @@ def generate_launch_description():
             default_value=world_name, \
                 description="Choice of Gazebo World"),
 
-        DeclareLaunchArgument('ezgripper_module', \
-            default_value=ezgripper_module, \
-                description='Required module of ezgripper'),
-
         ExecuteProcess(
             cmd=['gazebo', '--verbose', \
                 [os.path.join(pkg_dir, 'worlds/'), \
@@ -60,7 +54,7 @@ def generate_launch_description():
         Node(
             package='gazebo_ros', executable='spawn_entity.py',
             arguments=['-topic', 'robot_description',
-                       '-entity', LaunchConfiguration("ezgripper_module"),
+                       '-entity', 'ezgripper_single_mount',
                        '-x', '0',
                        '-y', '0',
                        '-z', '0'
@@ -74,7 +68,6 @@ def generate_launch_description():
                     'launch', 'description.launch.py')),
             launch_arguments={
                 'gui': LaunchConfiguration('gui'),
-                'ezgripper_module': LaunchConfiguration('ezgripper_module'),
                 }.items(),
         ),
 
@@ -83,7 +76,6 @@ def generate_launch_description():
                 os.path.join(get_package_share_directory("ezgripper_control"), \
                     'launch', 'control.launch.py')),
             launch_arguments={
-                'ezgripper_module': LaunchConfiguration('ezgripper_module'),
                 }.items(),
         ),
 

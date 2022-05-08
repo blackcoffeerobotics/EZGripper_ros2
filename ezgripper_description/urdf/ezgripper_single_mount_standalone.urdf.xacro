@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot name="ezgripper_dual_gen2_triple_mount" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="ezgripper_single_mount" xmlns:xacro="http://ros.org/wiki/xacro">
 
 
 	<xacro:property name="ezgripper_offset_x" value="0.02"/>
@@ -7,11 +7,12 @@
 	<xacro:property name="ezgripper_offset_z" value="0.3"/>
 
 	<xacro:include filename="$(find ezgripper_description)/urdf/materials.urdf.xacro"/>
-	<xacro:include filename="$(find ezgripper_description)/urdf/dual_gen2_triple_mount/ezgripper_dual_gen2_triple_mount.urdf.xacro"/>
+	<xacro:include filename="$(find ezgripper_description)/urdf/ezgripper_single_mount.urdf.xacro"/>
 
 	<!-- Add the gripper -->
-	<xacro:ezgripper_dual_gen2_triple_mount prefix="left" parent_link="base_link"
-			ox="${ezgripper_offset_x}" oy="${ezgripper_offset_y}" oz="${ezgripper_offset_z}"/>
+	<xacro:ezgripper_single_mount prefix="left" parent_link="base_link">
+		<origin xyz="${ezgripper_offset_x} ${ezgripper_offset_y} ${ezgripper_offset_z}" rpy="0 0 0"/>
+	</xacro:ezgripper_single_mount>
 
 	<link name="world"/>
 
